@@ -12,11 +12,10 @@ export const register = async (req, res) => {
                 password: hashedPassword
             }
         })
-        console.log(newUser)
         res.status(201).json({message: 'User Created Successfully'})
     } catch (error) {
         console.log(error)
-        res.status(201).json({message: 'Failed to create user'})
+        res.status(500).json({message: 'Failed to create user'})
 
     }
    
@@ -27,11 +26,11 @@ export const login = async (req, res) => {
     try {
         // check if user exist
         const user = await prisma.user.findUnique({where: {username }})
-        if(!user)  res.status(401).json({message: 'Invalid Cresentials'})
+        if(!user)  res.status(401).json({message: 'Invalid credentials'})
         
         // check if password is correct
         const isPasswordValid = await bcrypt.compare(password, user.password); 
-        if(!isPasswordValid)  res.status(401).json({message: 'Invalid Cresentials'})
+        if(!isPasswordValid)  res.status(401).json({message: 'Invalid credentials'})
 
         // generate cookie token and send to user
         // res.setHeader("Set-Cookie", "test=" + "myvalue").json("success")
@@ -39,13 +38,15 @@ export const login = async (req, res) => {
 
         const token = jwt.sign({
             id: user.id,
+            isAdmin: true
 
         },process.env.JWT_SECRET_KEY, {expiresIn: age})
 
+        const { password: userPassword, ...userinfo} = user
         res.cookie("token", token, {
             httpOnly: true,
             maxAge: age
-        }).status(200).json({message: 'Login Successful'})
+        }).status(200).json(userinfo)
 
     } catch (error) {
         res.status(201).json({message: 'Failed to login'})

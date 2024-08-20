@@ -137,6 +137,7 @@ export const profilePosts = async (req, res) => {
 
 export const getNotificationNumber = async (req, res) => {
   const tokenUserId = req.userId;
+  console.log(tokenUserId, 'te')
   try {
     const number = await prisma.chat.count({
       where: {
@@ -150,6 +151,7 @@ export const getNotificationNumber = async (req, res) => {
         },
       },
     });
+    console.log(number, 'num')
     res.status(200).json(number);
   } catch (err) {
     console.log(err);
